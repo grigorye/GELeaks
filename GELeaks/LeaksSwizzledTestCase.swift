@@ -12,7 +12,7 @@ import MachO
 
 extension XCTestCase {
     
-    func testLeaks(preheatCount: Int = 2, randomCount: Int = 3, _ invokeTest: () -> Void) {
+    func testLeaks(preheatCount: Int = 2, randomCount: Int = 3, reportLeak: (FBAllocationTrackerSummary, _ randomCount: Int) -> Void, _ invokeTest: () -> Void) {
         for _ in 0..<preheatCount {
             invokeTest()
         }
@@ -36,12 +36,7 @@ extension XCTestCase {
             guard i.aliveObjects >= 0 else {
                 return
             }
-            if i.aliveObjects % randomCount == 0 {
-                let times = i.aliveObjects / randomCount
-                XCTFail("\(cls) is likely leaked \(times) times.")
-            } else {
-                XCTFail("\(cls) is potentially leaked.")
-            }
+            reportLeak(i, randomCount)
         }
     }
     
@@ -49,7 +44,17 @@ extension XCTestCase {
         let invokeTest = {
             self.swizzledInvokeTest()
         }
-		testLeaks(preheatCount: 2, randomCount: 13, invokeTest)
+        let reportLeak = { (i: FBAllocationTrackerSummary, randomCount: Int) in
+            let className = i.className
+            if i.aliveObjects % randomCount == 0 {
+                let times = i.aliveObjects / randomCount
+                
+                XCTFail("\(className) is likely leaked \(times) times.")
+            } else {
+                XCTFail("\(className) is potentially leaked.")
+            }
+        }
+        testLeaks(reportLeak: reportLeak, invokeTest)
     }
 
     @objc class func swizzleInvokeTest() {
@@ -109,7 +114,17 @@ class LeaksTestCase: XCTestCase {
 						continue
 					}
 
-					testLeaks() {
+                    let reportLeak = { (i: FBAllocationTrackerSummary, randomCount: Int) in
+                        let leakedClassName = i.className
+                        if i.aliveObjects % randomCount == 0 {
+                            let times = i.aliveObjects / randomCount
+                            
+                            print("\(cls).\(methodName): \(leakedClassName) is likely leaked \(times) times.")
+                        } else {
+                            print("\(cls).\(methodName): \(leakedClassName) is potentially leaked.")
+                        }
+                    }
+                    testLeaks(reportLeak: reportLeak) {
 						autoreleasepool {
 							let c = testCaseClass.init(selector: selector)
 							c.invokeTest()
