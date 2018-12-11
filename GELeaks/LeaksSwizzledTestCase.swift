@@ -8,7 +8,6 @@
 
 import FBAllocationTracker
 import XCTest
-import MachO
 
 extension XCTestCase {
     
@@ -38,29 +37,6 @@ extension XCTestCase {
             }
             reportLeak(i, randomCount)
         }
-    }
-    
-    @objc func swizzledInvokeTest() {
-        let invokeTest = {
-            self.swizzledInvokeTest()
-        }
-        let reportLeak = { (i: FBAllocationTrackerSummary, randomCount: Int) in
-            let leakedCls = NSClassFromString(i.className)!
-            if i.aliveObjects % randomCount == 0 {
-                let times = i.aliveObjects / randomCount
-                
-                XCTFail("\(leakedCls) is likely leaked \(times) times.")
-            } else {
-                XCTFail("\(leakedCls) is potentially leaked.")
-            }
-        }
-        testLeaks(reportLeak: reportLeak, invokeTest)
-    }
-
-    @objc class func swizzleInvokeTest() {
-        let oldMethod = class_getInstanceMethod(self, #selector(invokeTest))!
-        let newMethod = class_getInstanceMethod(self, #selector(swizzledInvokeTest))!
-        method_exchangeImplementations(oldMethod, newMethod)
     }
 }
 
@@ -112,7 +88,7 @@ class LeaksTestCase: XCTestCase {
 					}
 
                     let reportLeak = { (i: FBAllocationTrackerSummary, randomCount: Int) in
-                        let leakedCls = NSClassFromString(i.className)!
+                        let leakedCls: AnyClass = NSClassFromString(i.className)!
                         if i.aliveObjects % randomCount == 0 {
                             let times = i.aliveObjects / randomCount
                             print("\(cls).\(methodName): \(leakedCls) is likely leaked \(times) times.")
