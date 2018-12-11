@@ -45,13 +45,13 @@ extension XCTestCase {
             self.swizzledInvokeTest()
         }
         let reportLeak = { (i: FBAllocationTrackerSummary, randomCount: Int) in
-            let className = i.className
+            let leakedCls = NSClassFromString(i.className)!
             if i.aliveObjects % randomCount == 0 {
                 let times = i.aliveObjects / randomCount
                 
-                XCTFail("\(className) is likely leaked \(times) times.")
+                XCTFail("\(leakedCls) is likely leaked \(times) times.")
             } else {
-                XCTFail("\(className) is potentially leaked.")
+                XCTFail("\(leakedCls) is potentially leaked.")
             }
         }
         testLeaks(reportLeak: reportLeak, invokeTest)
@@ -107,29 +107,30 @@ class LeaksTestCase: XCTestCase {
 					let method = allMethods[j]
 					let selector = method_getName(method)
 					let methodName = NSStringFromSelector(selector)
-					guard methodName.hasPrefix("test") else {
-						continue
-					}
-					guard !methodName.hasSuffix(":") else {
+					guard methodName.hasPrefix("test"), !methodName.hasSuffix(":") else {
 						continue
 					}
 
                     let reportLeak = { (i: FBAllocationTrackerSummary, randomCount: Int) in
-                        let leakedClassName = i.className
+                        let leakedCls = NSClassFromString(i.className)!
                         if i.aliveObjects % randomCount == 0 {
                             let times = i.aliveObjects / randomCount
-                            
-                            print("\(cls).\(methodName): \(leakedClassName) is likely leaked \(times) times.")
+                            print("\(cls).\(methodName): \(leakedCls) is likely leaked \(times) times.")
                         } else {
-                            print("\(cls).\(methodName): \(leakedClassName) is potentially leaked.")
+                            print("\(cls).\(methodName): \(leakedCls) is potentially leaked.")
                         }
                     }
-                    testLeaks(reportLeak: reportLeak) {
-						autoreleasepool {
-							let c = testCaseClass.init(selector: selector)
-							c.invokeTest()
-						}
-					}
+                    let exception = NSException.catch({
+                        self.testLeaks(reportLeak: reportLeak) {
+                            autoreleasepool {
+                                let c = testCaseClass.init(selector: selector)
+                                c.invokeTest()
+                            }
+                        }
+                    })
+                    if let exception = exception {
+                        print("\(cls).\(methodName): Caught \(exception).")
+                    }
 				}
 			}
 		}
