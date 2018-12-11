@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
 
   s.source = { :git => "https://github.com/grigorye/GELeaks.git", :tag => "#{s.version}" }
 
-  s.source_files = "GELeaks/*.swift"
+  s.source_files = "GELeaks/*.{swift,h,m}"
   
   s.swift_version = '4.2'
 
