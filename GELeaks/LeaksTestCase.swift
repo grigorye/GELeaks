@@ -1,5 +1,5 @@
 //
-//  LeaksSwizzledTestCase.swift
+//  LeaksTestCase.swift
 //  GELeaks
 //
 //  Created by Grigorii Entin on 12/11/18.
