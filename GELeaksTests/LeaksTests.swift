@@ -11,7 +11,7 @@ import XCTest
 class Y : NSObject {
 }
 
-class LeaksTests: XCTestCase {
+class LeaksTests : XCTestCase {
 
     func testLeak() {
 		let x = NSMutableArray()
