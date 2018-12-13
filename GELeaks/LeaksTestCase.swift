@@ -40,7 +40,7 @@ extension XCTestCase {
     }
 }
 
-class LeaksTestCase: XCTestCase {
+class LeaksTestCase : XCTestCase {
     
     func testLeaks() {
         let classes = allClasses()
@@ -55,6 +55,9 @@ class LeaksTestCase: XCTestCase {
         guard Bundle(for: cls) === testBundle else {
             return
         }
+		guard !NSStringFromClass(cls).hasPrefix("__") else {
+			return
+		}
         guard let testCaseClass = cls as? XCTestCase.Type else {
             return
         }
