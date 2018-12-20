@@ -9,123 +9,69 @@
 import FBAllocationTracker
 import XCTest
 
-extension XCTestCase {
-    
-    func testLeaks(preheatCount: Int = 2, randomCount: Int = 3, reportLeak: (FBAllocationTrackerSummary, _ randomCount: Int) -> Void, _ invokeTest: () -> Void) {
-        for _ in 0..<preheatCount {
-            invokeTest()
-        }
-        let allocationTrackerManager = FBAllocationTrackerManager.shared()!
-        allocationTrackerManager.startTrackingAllocations()
-        for _ in 0..<randomCount {
-            invokeTest()
-        }
-        let allocationSummary = allocationTrackerManager.currentAllocationSummary()
-        allocationTrackerManager.stopTrackingAllocations()
-        for i in allocationSummary ?? [] {
-            guard let cls = NSClassFromString(i.className) else {
-                assertionFailure()
-                continue
-            }
-            let bundle = Bundle(for: cls)
-            let bundlePath = bundle.bundlePath
-            if bundlePath.hasPrefix("/System/") || bundlePath.hasPrefix("/Applications/") || bundlePath.hasPrefix("/Library/"){
-                continue
-            }
-            guard i.aliveObjects >= 0 else {
-                return
-            }
-            reportLeak(i, randomCount)
-        }
-    }
-}
+var testingLeaksSanity = false
 
 class LeaksTestCase : XCTestCase {
-    
-    func testLeaks() {
-        let classes = allClasses()
-        for cls in classes {
-            testLeaks(for: cls)
-        }
-    }
-
-    lazy var testBundle = Bundle(for: type(of: self))
-
-    func testLeaks(for cls: AnyClass) {
-        guard Bundle(for: cls) === testBundle else {
-            return
-        }
-		guard !NSStringFromClass(cls).hasPrefix("__") else {
-			return
+	
+    func testLeaksForAllTestCases() {
+		let testCaseClasses = Bundle(for: type(of: self)).allClasses().compactMap { $0 as? XCTestCase.Type }
+		
+		var generalTestCaseClasses: [XCTestCase.Type] = []
+		var sanityTestCaseClasses: [(XCTestCase & LeaksSanityTesting).Type] = []
+		
+		testCaseClasses.forEach {
+			if let sanityTestCaseClass = $0 as? (XCTestCase & LeaksSanityTesting).Type {
+				sanityTestCaseClasses.append(sanityTestCaseClass)
+			} else {
+				generalTestCaseClasses.append($0)
+			}
 		}
-        guard let testCaseClass = cls as? XCTestCase.Type else {
-            return
-        }
-        guard testCaseClass != type(of: self) else {
-            return
-        }
-        
-        let methods = allMethods(for: cls)
-        for method in methods {
-            testLeaks(for: testCaseClass, method: method)
-        }
-    }
-    
-    func testLeaks(for cls: XCTestCase.Type, method: Method) {
-        let selector = method_getName(method)
-        let methodName = NSStringFromSelector(selector)
-        guard methodName.hasPrefix("test"), !methodName.hasSuffix(":") else {
-            return
-        }
-        let reportLeak = { (i: FBAllocationTrackerSummary, randomCount: Int) in
-            let leakedCls: AnyClass = NSClassFromString(i.className)!
-            if i.aliveObjects % randomCount == 0 {
-                let times = i.aliveObjects / randomCount
-                print("\(cls).\(methodName): \(leakedCls) is likely leaked \(times) times.")
-            } else {
-                print("\(cls).\(methodName): \(leakedCls) is potentially leaked.")
-            }
-        }
-        let exception = NSException.catch({
-            self.testLeaks(reportLeak: reportLeak) {
-                autoreleasepool {
-                    let c = cls.init(selector: selector)
-                    c.invokeTest()
-                }
-            }
-        })
-        if let exception = exception {
-            print("\(cls).\(methodName): Caught \(exception).")
-        }
-    }
-}
+		
+		testLeaksSanity(with: sanityTestCaseClasses)
+		testLeaks(for: generalTestCaseClasses)
+	}
+	
+	private func testLeaks(for testCaseClasses: [XCTestCase.Type]) {
+		let config = LeakDetectionConfig(preheatCount: 2, randomCount: 3, reportLeak: defaultReportLeak)
+		testCaseClasses.forEach { testCaseClass in
+			autoreleasepool {
+				testLeaks(for: testCaseClass, config: config)
+			}
+		}
+	}
+	
+	private func testLeaksSanity(with sanityTestCaseClasses: [(XCTestCase & LeaksSanityTesting).Type]) {
+		testingLeaksSanity = true
+		defer {
+			testingLeaksSanity = false
+		}
+		
+		let config = LeakDetectionConfig(preheatCount: 2, randomCount: 3, reportLeak: { (testCaseClass, selector, allocationSummary, config) in
+			let leaksSanityTests = testCaseClass as! LeaksSanityTesting.Type
+			leaksSanityTests.reportLeak(selector, allocationSummary, config)
+		})
+		sanityTestCaseClasses.forEach { testCaseClass in
+			autoreleasepool {
+				testLeaks(for: testCaseClass, config: config)
+			}
+		}
+		
+		sanityTestCaseClasses.forEach {
+			$0.assertSanity(for: config)
+		}
+	}
 
-func allClasses() -> [AnyClass] {
-    let estimatedNumClasses = objc_getClassList(nil, 0)
-    
-    guard estimatedNumClasses > 0 else {
-        return []
+	private func testLeaks(for testCaseClass: XCTestCase.Type, config: LeakDetectionConfig) {
+        let methods = allMethods(for: testCaseClass)
+        for method in methods where shouldTestLeaks(for: testCaseClass, method: method) {
+			testCaseClass.testLeaks(for: method, config: config)
+        }
     }
-    
-    let allClasses = UnsafeMutablePointer<AnyClass>.allocate(capacity: Int(estimatedNumClasses))
-    defer {
-        allClasses.deinitialize(count: Int(estimatedNumClasses))
-        allClasses.deallocate()
-    }
-    
-    let numClasses = objc_getClassList(AutoreleasingUnsafeMutablePointer(allClasses), estimatedNumClasses)
-    
-    return Array(UnsafeBufferPointer(start: allClasses, count: Int(numClasses)))
-}
 
-func allMethods(for cls: AnyClass) -> [Method] {
-    var numMethods: UInt32 = 0
-    guard let allMethods = class_copyMethodList(cls, &numMethods) else {
-        assertionFailure()
-        return []
-    }
-    defer {
-        free(allMethods)
-    }
-    return Array(UnsafeBufferPointer(start: allMethods, count: Int(numMethods)))
+	private func shouldTestLeaks(for testCaseClass: XCTestCase.Type, method: Method) -> Bool {
+		guard testCaseClass != type(of: self) else {
+			return !sel_isEqual(method_getName(method), #selector(testLeaksForAllTestCases))
+		}
+		return true
+	}
 }
