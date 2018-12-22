@@ -11,6 +11,14 @@ Laziness. Excersizing for memory leaks is boring. There're some naive ways to ex
 
 If we can treat a test case as a black box, we can apply the naive ways to exercise it for memory leaks. Automate it.
 
+# Current Limitations
+
+* Only NSObject subclasses are checked.
+
+# TODOs
+
+* Support pure Swift classes
+
 # Usage
 
 Add pod to test target (Podfile) or to test_spec subspec (podspec). Run the tests. Get leaks reported.
