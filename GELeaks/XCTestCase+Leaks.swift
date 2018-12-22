@@ -12,7 +12,15 @@ struct LeakDetectionConfig {
 	let preheatCount: Int
 	let randomCount: Int
 	
-	let reportLeak: (_ testCaseClass: AnyClass, _ selector: Selector, _ allocationSummary: FBAllocationTrackerSummary, _ config: LeakDetectionConfig) -> Void
+	typealias ReportLeak = (_ testCaseClass: AnyClass, _ selector: Selector, _ allocationSummary: FBAllocationTrackerSummary, _ config: LeakDetectionConfig) -> Void
+	
+	let reportLeak: ReportLeak
+	
+	init(preheatCount: Int = 2, randomCount: Int = 3, reportLeak: @escaping ReportLeak = defaultReportLeak) {
+		self.preheatCount = preheatCount
+		self.randomCount = randomCount
+		self.reportLeak = reportLeak
+	}
 }
 
 func defaultReportLeak(_ testCaseClass: AnyClass, _ selector: Selector, _ allocationSummary: FBAllocationTrackerSummary, _ config: LeakDetectionConfig) {
