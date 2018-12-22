@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name = "GELeaks"
-  s.version = "0.1.2"
+  s.version = "0.1.3"
   s.summary = "Seamless leak detection in tests."
 
   s.description  = <<~END
@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
 
   s.source = { :git => "https://github.com/grigorye/GELeaks.git", :tag => "#{s.version}" }
 
-  s.source_files = "GELeaks/*.{swift,h,m}"
+  s.source_files = "GELeaks/**/*.{swift,h,m}"
   
   s.swift_version = '4.2'
 
