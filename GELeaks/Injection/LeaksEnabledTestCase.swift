@@ -23,7 +23,7 @@ extension XCTestCase {
 				addLeaksWrappedMethod(for: method, testCaseClass: testCaseClass, classPair: classPair, config: config)
 			}
 			
-			objc_registerClassPair(dump(classPair))
+			objc_registerClassPair(classPair)
 			suite.addTest(XCTestSuite(forTestCaseClass: classPair))
 		}
 		
