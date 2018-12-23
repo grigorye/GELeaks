@@ -10,6 +10,9 @@ import XCTest
 extension XCTestCase {
 	
 	@objc public class func injectLeaks() {
+		guard leaksEnabled else {
+			return
+		}
 		injectDefaultTestSuite()
 	}
 	

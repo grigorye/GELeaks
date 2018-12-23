@@ -5,6 +5,8 @@
 //  Created by Grigory Entin on 22/12/2018.
 //
 
+let leaksEnabled: Bool = defaults.bool(forKey: "GELeaksEnabled") ?? true
+
 extension LeakDetectionConfig {
 	static let defaultPreheatCount: Int = defaults.integer(forKey: "GELeaksPreheatCount") ?? 2
 	static let defaultRandomCount: Int = defaults.integer(forKey: "GELeaksRandomCount") ?? 3
