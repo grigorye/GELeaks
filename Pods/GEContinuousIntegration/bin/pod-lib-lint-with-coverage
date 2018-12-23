@@ -1,0 +1,17 @@
+#! /bin/sh -xe
+
+bn=$(basename "$0")
+dn=$(dirname "$0")
+
+tmpdir=$(mktemp -d /tmp/"${bn:?}".XXXXX)
+tmpbindir="${tmpdir:?}/bin"
+mkdir "${tmpbindir:?}"
+cp -p "${dn:?}"/xcodebuild-with-enforced-coverage "${tmpbindir:?}"/xcodebuild
+xcconfig="${tmpdir:?}/xcode.xcconfig"
+
+cat > "${xcconfig:?}" <<-END
+CLANG_COVERAGE_MAPPING = YES
+CLANG_ENABLE_CODE_COVERAGE = YES
+END
+
+env XCODE_XCCONFIG_FILE="${xcconfig:?}" PATH="${tmpbindir:?}":"$PATH" pod lib lint "$@"

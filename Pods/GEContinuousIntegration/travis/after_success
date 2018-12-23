@@ -1,0 +1,8 @@
+#! /bin/bash
+
+set -exo pipefail
+
+ls -ld ~/Library/Developer/Xcode/DerivedData
+bash <(curl -s https://codecov.io/bash) -D ~/Library/Developer/Xcode/DerivedData/ -f '!*-Unit-Tests.xctest.coverage.txt'
+
+set +exo pipefail

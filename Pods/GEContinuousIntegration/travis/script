@@ -1,0 +1,12 @@
+#! /bin/bash
+
+set -exo pipefail
+
+binDir="${PWD:?}/Pods/GEContinuousIntegration/bin"
+tmpdir=$(mktemp -d /tmp/XXXXX)
+
+pod_lib_lint_no_clean_log="${tmpdir:?}/pod-lib-lint-no-clean.log"
+
+"${binDir:?}"/pod-lib-lint-with-coverage --platforms="${platforms:?}" --no-clean --sources=https://github.com/grigorye/podspecs,https://github.com/CocoaPods/Specs.git | tee "${pod_lib_lint_no_clean_log:?}"
+
+set +exo pipefail

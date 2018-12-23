@@ -1,0 +1,11 @@
+osx_image: xcode10.1
+language: swift
+cache: bundler
+env:
+  matrix:
+    - platforms=ios
+    - platforms=macos
+script:
+  - . Pods/GEContinuousIntegration/travis/script
+after_success:
+  - . Pods/GEContinuousIntegration/travis/after_success
