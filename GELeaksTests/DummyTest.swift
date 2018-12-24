@@ -9,6 +9,8 @@ import XCTest
 
 class DummyTest : XCTestCase {
 	
+	private let dummyProperty = DummyProperty()
+	
 	func testDummy() {
 		let a = NSMutableArray()
 		a.add(DummyObject())
@@ -16,6 +18,35 @@ class DummyTest : XCTestCase {
 		a.add(a)
 		#endif
 	}
+	
+	func testMoreDummy() {
+	}
+	
+	override func setUp() {
+		super.setUp()
+	}
+	
+	override func tearDown() {
+		super.tearDown()
+	}
+	
+	deinit {()}
 }
 
-class DummyObject : NSObject {}
+class DummyObject : NSObject {
+	
+	override init() {
+		super.init()
+	}
+	
+	deinit {()}
+}
+
+class DummyProperty : NSObject {
+	
+	override init() {
+		super.init()
+	}
+	
+	deinit {()}
+}
