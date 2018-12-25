@@ -7,10 +7,13 @@
 
 import class XCTest.XCTestCase
 
-func shouldTestLeaks(for testCaseClass: XCTestCase.Type, method: Method) -> Bool {
+func shouldTestLeaks(for testCaseClass: XCTestCase.Type, method: Method, selectedMethodName: String? = nil) -> Bool {
 	let selector = method_getName(method)
 	let methodName = NSStringFromSelector(selector)
 	guard methodName.hasPrefix("test") && !methodName.hasSuffix(":") else {
+		return false
+	}
+	if let selectedMethodName = selectedMethodName, methodName != selectedMethodName {
 		return false
 	}
 	return true
