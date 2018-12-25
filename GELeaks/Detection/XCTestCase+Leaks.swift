@@ -27,20 +27,19 @@ extension XCTestCase {
 	}
 	
 	class func testLeaks(selector: Selector, config: LeakDetectionConfig) {
-		let invokeTest = {
+		let performTest = {
 			autoreleasepool {
-				let c = self.init(selector: selector)
-				c.invokeTest()
+				self.performTest(with: selector)
 			}
 		}
 		
 		for _ in 0 ..< config.preheatCount {
-			invokeTest()
+			performTest()
 		}
 		let allocationTrackerManager = FBAllocationTrackerManager.shared()!
 		allocationTrackerManager.startTrackingAllocations()
 		for _ in 0 ..< config.randomCount {
-			invokeTest()
+			performTest()
 		}
 		let allocationSummary = allocationTrackerManager.currentAllocationSummary()
 		allocationTrackerManager.stopTrackingAllocations()
@@ -55,5 +54,6 @@ extension XCTestCase {
 			}
 			config.reportLeak(self, selector, i, config)
 		}
+		(self as? LeaksSanityTesting.Type)?.didTestLeaks(for: selector, config: config)
 	}
 }
