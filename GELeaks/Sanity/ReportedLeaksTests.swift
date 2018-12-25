@@ -8,31 +8,25 @@
 import XCTest
 
 class ReportedLeaksTests : LeaksReportsTestCaseBase, LeaksSanityTesting {
-
-	func testLeaking() {
-		guard testingLeaksSanity else {
-			return
-		}
-
-		_Self.leakingTestRunCount += 1
-		
+	
+	func testSanity() {
 		let retainCycledArray = NSMutableArray()
 		let leakedObject = LeaksSanityTestsLeakedObject()
 		retainCycledArray.add(retainCycledArray)
 		retainCycledArray.add(leakedObject)
 	}
-
-	class func assertSanity(for config: LeakDetectionConfig) {
-		XCTAssertEqual(_Self.leakingTestRunCount, config.preheatCount + config.randomCount)
+	
+	override class func didTestLeaks(for selector: Selector, config: LeakDetectionConfig) {
 		XCTAssertEqual(_Self.likelyLeaksReported.count, 1)
+		super.didTestLeaks(for: selector, config: config)
 	}
 	
 	// MARK: -
 	
-	private static var classDataImp = ClassData()
-	override class var _Self: ClassData {
-		return classDataImp
+	class var _Self: LeaksSanityReportsClassState {
+		return classStateImp
 	}
+	private static var classStateImp = LeaksSanityReportsClassState()
 }
 
 class LeaksSanityTestsLeakedObject : NSObject {
