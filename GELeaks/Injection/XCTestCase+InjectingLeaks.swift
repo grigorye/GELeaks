@@ -22,3 +22,13 @@ extension XCTestCase {
 		method_exchangeImplementations(oldMethod, newMethod)
 	}
 }
+
+extension XCTestSuite {
+	
+	@objc public class func injectLeaks() {
+		guard leaksEnabled else {
+			return
+		}
+		injectForTestCaseWithName()
+	}
+}

@@ -7,6 +7,8 @@
 
 import XCTest
 
+private class BundleTag {}
+
 extension XCTestCase {
 	
 	class func leaksEnabledDefaultTestSuite() -> XCTestSuite {
@@ -25,6 +27,47 @@ extension XCTestCase {
 			
 			objc_registerClassPair(classPair)
 			suite.addTest(XCTestSuite(forTestCaseClass: classPair))
+		}
+		
+		return suite
+	}
+}
+
+extension XCTestSuite {
+	
+	@objc(leaksEnabledTestSuiteForTestCaseWithName:)
+	public class func leaksEnabledTestSuiteForTestCaseWithName(_ name: String) -> XCTestSuite {
+		let nameComponents = name.split(separator: "/")
+		let leaksAwareTestCaseName = String(nameComponents.first!)
+		let testCaseName: String = {
+			if leaksAwareTestCaseName.hasSuffix("Leaks") {
+				let endIndex = leaksAwareTestCaseName.endIndex
+				let i = leaksAwareTestCaseName.index(endIndex, offsetBy: -"Leaks".count)
+				return String(leaksAwareTestCaseName[..<i])
+			}
+			return leaksAwareTestCaseName
+		}()
+		let testMethodName: String? = (nameComponents.count > 1) ? String(nameComponents[1]) : nil
+		let testCaseClassName = Bundle(for: BundleTag.self).allClassNames().first { $0.hasSuffix("." + testCaseName) }!
+		let testCaseClass = NSClassFromString(testCaseClassName) as! XCTestCase.Type
+		
+		let config = LeakDetectionConfig()
+		let leaksUnawareName = [testCaseName, testMethodName].compactMap { $0 }.joined(separator: "/")
+		let suite = self.leaksEnabledTestSuiteForTestCaseWithName(leaksUnawareName)
+		let className = NSStringFromClass(testCaseClass)
+		let classPairName = className + "Leaks"
+		
+		if NSClassFromString(classPairName) == nil {
+			classPairName.withCString { cClassPairName in
+				let classPair = objc_allocateClassPair(XCTestCase.self, cClassPairName, 0) as! XCTestCase.Type
+				
+				for method in allMethods(for: testCaseClass) where shouldTestLeaks(for: testCaseClass, method: method, selectedMethodName: testMethodName) {
+					addLeaksWrappedMethod(for: method, testCaseClass: testCaseClass, classPair: classPair, config: config)
+				}
+				
+				objc_registerClassPair(classPair)
+				suite.addTest(XCTestSuite(forTestCaseClass: classPair))
+			}
 		}
 		
 		return suite
