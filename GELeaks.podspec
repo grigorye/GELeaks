@@ -30,7 +30,7 @@ Pod::Spec.new do |s|
   s.framework = 'XCTest'
 
   s.test_spec 'Tests' do |test_spec|
-    test_spec.source_files = 'GELeaksTests/**/*.swift'
+    test_spec.source_files = 'GELeaksTests/**/*.{swift,h,m}'
   end
 
 end
