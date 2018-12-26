@@ -7,7 +7,7 @@
 
 import XCTest
 
-class PropertyLeakingSanityTests : LeaksReportsTestCaseBase, LeaksSanityTesting {
+class PropertyLeakingSanityTests : LeaksSanityTestsBase, LeaksSanityTesting {
 	
 	let x = LeaksSanityTestsLeakedObject()
 	

@@ -1,5 +1,5 @@
 //
-//  DummyTest.swift
+//  DummyTests.swift
 //  GELeaks
 //
 //  Created by Grigory Entin on 20/12/2018.
@@ -7,7 +7,7 @@
 
 import XCTest
 
-class DummyTest : XCTestCase {
+class DummyTests : XCTestCase {
 	
 	private let dummyProperty = DummyProperty()
 	

@@ -1,5 +1,5 @@
 //
-//  LeaksReportsTestCaseBase.swift
+//  LeaksSanityTestsBase.swift
 //  Pods
 //
 //  Created by Grigory Entin on 20/12/2018.
@@ -8,7 +8,7 @@
 import FBAllocationTracker
 import XCTest
 
-class LeaksReportsTestCaseBase : XCTestCase {
+class LeaksSanityTestsBase : XCTestCase {
 	
 	override func tearDown() {
 		_Self.leakingTestRunCount += 1

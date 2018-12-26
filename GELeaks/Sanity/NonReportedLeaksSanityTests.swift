@@ -1,5 +1,5 @@
 //
-//  NonReportedLeaksTests.swift
+//  NonReportedLeaksSanityTests.swift
 //  GELeaks
 //
 //  Created by Grigory Entin on 08/12/2018.
@@ -8,7 +8,7 @@
 
 import XCTest
 
-class NonReportedLeaksTests : LeaksReportsTestCaseBase, LeaksSanityTesting {
+class NonReportedLeaksTests : LeaksSanityTestsBase, LeaksSanityTesting {
 	
 	func testSanity() {
 		// This won't be reported as a leak as it doesn't use +alloc[WithZone:].

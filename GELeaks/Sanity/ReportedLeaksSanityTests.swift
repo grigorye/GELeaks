@@ -1,5 +1,5 @@
 //
-//  ReportedLeaksTests.swift
+//  ReportedLeaksSanityTests.swift
 //  Pods
 //
 //  Created by Grigory Entin on 20/12/2018.
@@ -7,7 +7,7 @@
 
 import XCTest
 
-class ReportedLeaksTests : LeaksReportsTestCaseBase, LeaksSanityTesting {
+class ReportedLeaksTests : LeaksSanityTestsBase, LeaksSanityTesting {
 	
 	func testSanity() {
 		let retainCycledArray = NSMutableArray()
