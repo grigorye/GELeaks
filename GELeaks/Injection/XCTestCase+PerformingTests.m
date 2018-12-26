@@ -9,7 +9,7 @@
 
 @implementation XCTestCase (PerformingTests)
 
-+ (void)performTestWithSelector:(SEL)selector;
++ (instancetype)nonLeakingTestWithSelector:(SEL)selector;
 {
 #if 1
 	NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[self instanceMethodSignatureForSelector:selector]];
@@ -21,7 +21,7 @@
 	XCTestCase *test = [[self alloc] initWithSelector:selector];
 #endif
 
-	[test invokeTest];
+	return test;
 }
 
 @end

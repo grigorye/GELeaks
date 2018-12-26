@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface XCTestCase (PerformingTests)
 
-+ (void)performTestWithSelector:(SEL)selector;
++ (instancetype)nonLeakingTestWithSelector:(SEL)selector;
 
 @end
 
