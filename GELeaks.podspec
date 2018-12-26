@@ -27,6 +27,7 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.dependency 'FBAllocationTracker'
+  s.dependency 'JRSwizzle'
   s.framework = 'XCTest'
 
   s.test_spec 'Tests' do |test_spec|
