@@ -9,9 +9,11 @@ import XCTest
 
 private class BundleTag {}
 
+private var injectedWaiterTestCaseAssoc: Void?
+
 extension XCTestCase {
 	
-	class func leaksEnabledDefaultTestSuite() -> XCTestSuite {
+	@objc public class func leaksEnabledDefaultTestSuite() -> XCTestSuite {
 		let config = LeakDetectionConfig()
 		let suite = XCTestSuite(name: "Leaks enabled \(self)")
 		suite.addTest(XCTestSuite(forTestCaseClass: self))
@@ -31,6 +33,25 @@ extension XCTestCase {
 		}
 		
 		return suite
+	}
+    
+	@objc public var injectedWaiterTestCase: XCTestCase? {
+		set {
+			objc_setAssociatedObject(self, &injectedWaiterTestCaseAssoc, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+		}
+		get {
+			let value = objc_getAssociatedObject(self, &injectedWaiterTestCaseAssoc) as! XCTestCase?
+			return value
+		}
+	}
+
+	@objc(leaksEnabledWaitForExpectations:timeout:)
+	public func leaksEnabledWait(for expectations: [XCTestExpectation], timeout seconds: TimeInterval) {
+		guard let injectedWaiterTestCase = self.injectedWaiterTestCase else {
+			self.leaksEnabledWait(for: expectations, timeout: seconds)
+			return
+		}
+		injectedWaiterTestCase.wait(for: expectations, timeout: seconds)
 	}
 }
 
@@ -81,8 +102,8 @@ extension XCTestSuite {
 }
 
 func addLeaksWrappedMethod(for method: Method, testCaseClass: XCTestCase.Type, classPair: XCTestCase.Type, config: LeakDetectionConfig) {
-	let impBlock: @convention(block) (AnyObject, Selector) -> Void = { (_self, _cmd) in
-		testCaseClass.testLeaks(for: method, config: config)
+	let impBlock: @convention(block) (XCTestCase, Selector) -> Void = { (_self, _cmd) in
+        testCaseClass.testLeaks(for: method, config: config, leaksTestCase: _self)
 	}
 	let selector = method_getName(method)
 	let imp = imp_implementationWithBlock(impBlock)
