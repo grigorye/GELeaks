@@ -19,7 +19,10 @@
 {
 	NSError *error;
 	BOOL succeeded = [self jr_swizzleClassMethod:@selector(defaultTestSuite) withClassMethod:@selector(leaksEnabledDefaultTestSuite) error:&error];
-	NSAssert(succeeded, @"%@", error);
+	if (!succeeded) {
+		NSAssert(NO, @"%@", error);
+		abort();
+	}
 }
 
 + (void)injectWaitForExpectations;
@@ -27,7 +30,10 @@
 	NSError *error;
 	
 	BOOL succeeded = [self jr_swizzleMethod:@selector(waitForExpectations:timeout:) withMethod:@selector(leaksEnabledWaitForExpectations:timeout:) error:&error];
-	NSAssert(succeeded, @"%@", error);
+	if (!succeeded) {
+		NSAssert(NO, @"%@", error);
+		abort();
+	}
 }
 
 @end
@@ -42,7 +48,10 @@
 {
 	NSError *error;
 	BOOL succeeded = [self jr_swizzleClassMethod:@selector(testSuiteForTestCaseWithName:) withClassMethod:@selector(leaksEnabledTestSuiteForTestCaseWithName:) error:&error];
-	NSAssert(succeeded, @"%@", error);
+	if (!succeeded) {
+		NSAssert(NO, @"%@", error);
+		abort();
+	}
 }
 
 @end
