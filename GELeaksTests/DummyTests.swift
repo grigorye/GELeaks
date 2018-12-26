@@ -21,6 +21,12 @@ class DummyTests : XCTestCase {
 	
 	func testMoreDummy() {
 	}
+
+	/// When enabled, triggers a failure that is expected to be handled without a problem.
+	func notestWaiter() {
+		let expectation = self.expectation(description: "foo")
+		wait(for: [expectation], timeout: 0.01)
+	}
 	
 	override func setUp() {
 		super.setUp()
