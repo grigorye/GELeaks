@@ -9,6 +9,9 @@
 
 @interface XCTestCase (InjectingLeaks)
 
++ (void)injectDefaultTestSuite;
++ (void)injectWaitForExpectations;
+
 @end
 
 @interface XCTestSuite (InjectingLeaks)

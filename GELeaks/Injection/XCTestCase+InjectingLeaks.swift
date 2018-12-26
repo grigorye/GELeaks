@@ -5,6 +5,7 @@
 //  Created by Grigory Entin on 20/12/2018.
 //
 
+import JRSwizzle
 import XCTest
 
 extension XCTestCase {
@@ -14,12 +15,7 @@ extension XCTestCase {
 			return
 		}
 		injectDefaultTestSuite()
-	}
-	
-	private class func injectDefaultTestSuite() {
-		let oldMethod = class_getClassMethod(self, #selector(getter: defaultTestSuite))!
-		let newMethod = class_getClassMethod(self, #selector(leaksEnabledDefaultTestSuite))!
-		method_exchangeImplementations(oldMethod, newMethod)
+        injectWaitForExpectations()
 	}
 }
 
