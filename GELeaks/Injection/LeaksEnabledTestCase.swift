@@ -13,7 +13,8 @@ extension XCTestCase {
 	
 	class func leaksEnabledDefaultTestSuite() -> XCTestSuite {
 		let config = LeakDetectionConfig()
-		let suite = XCTestSuite(forTestCaseClass: self)
+		let suite = XCTestSuite(name: "Leaks enabled \(self)")
+		suite.addTest(XCTestSuite(forTestCaseClass: self))
 		let testCaseClass = self
 		let className = NSStringFromClass(testCaseClass)
 		let classPairName = className + "Leaks"
@@ -48,16 +49,21 @@ extension XCTestSuite {
 			return leaksAwareTestCaseName
 		}()
 		let testMethodName: String? = (nameComponents.count > 1) ? String(nameComponents[1]) : nil
-		let testCaseClassName = Bundle(for: BundleTag.self).allClassNames().first { $0.hasSuffix("." + testCaseName) }!
+		let testCaseClassName = Bundle(for: BundleTag.self).allClassNames().first { ($0 == testCaseName) || $0.hasSuffix("." + testCaseName) }!
 		let testCaseClass = NSClassFromString(testCaseClassName) as! XCTestCase.Type
 		
 		let config = LeakDetectionConfig()
 		let leaksUnawareName = [testCaseName, testMethodName].compactMap { $0 }.joined(separator: "/")
-		let suite = self.leaksEnabledTestSuiteForTestCaseWithName(leaksUnawareName)
+		let originalSuite = self.leaksEnabledTestSuiteForTestCaseWithName(leaksUnawareName)
 		let className = NSStringFromClass(testCaseClass)
 		let classPairName = className + "Leaks"
 		
-		if NSClassFromString(classPairName) == nil {
+		let suite: XCTestSuite
+		if NSClassFromString(classPairName) != nil {
+			suite = originalSuite
+		} else {
+			suite = XCTestSuite(name: "Leaks enabled \(leaksUnawareName)")
+			suite.addTest(originalSuite)
 			classPairName.withCString { cClassPairName in
 				let classPair = objc_allocateClassPair(XCTestCase.self, cClassPairName, 0) as! XCTestCase.Type
 				
