@@ -11,8 +11,8 @@ import Nimble
 class DummySpec : QuickSpec {
 	override func spec() {
 		describe("leak") {
-			leakAsNecessary()
 			it("leaks") {
+				leakAsNecessary()
 				expect(true).to(be(true))
 			}
 		}
