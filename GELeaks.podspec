@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.author = { "Grigory Entin" => "grigory.entin@gmail.com" }
 
   s.ios.deployment_target = '7.0'
-  s.osx.deployment_target = '10.10'
+  s.osx.deployment_target = '10.9'
   s.tvos.deployment_target = '9.0'
 
   s.source = { :git => "https://github.com/grigorye/GELeaks.git", :tag => "#{s.version}" }
@@ -31,8 +31,7 @@ Pod::Spec.new do |s|
 
   s.test_spec 'Tests' do |test_spec|
     test_spec.source_files = 'GELeaksTests/**/*.{swift,h,m}'
-    test_spec.dependency 'Quick'
-    test_spec.dependency 'Nimble'
+    test_spec.exclude_files = 'GELeaksTests/**/*Spec.swift'
   end
 
 end
