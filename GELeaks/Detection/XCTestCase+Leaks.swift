@@ -46,9 +46,7 @@ extension XCTestCase {
 		for i in allocationSummary ?? [] where i.aliveObjects >= 0 {
 			if config.excludeSystemClasses {
 				let cls: AnyClass = NSClassFromString(i.className)!
-				let bundle = Bundle(for: cls)
-				let bundlePath = bundle.bundlePath
-				if bundlePath.hasPrefix("/System/") || bundlePath.hasPrefix("/Applications/") || bundlePath.hasPrefix("/Library/"){
+				if isSystemClass(cls) {
 					continue
 				}
 			}
@@ -56,4 +54,22 @@ extension XCTestCase {
 		}
 		(self as? LeaksSanityTesting.Type)?.didTestLeaks(for: selector, config: config)
 	}
+}
+
+func isSystemClass(_ cls: AnyClass) -> Bool {
+	
+	let systemPathPrefixes: [String] = [
+		"/System/",
+		"/Applications/",
+		"/Library/",
+		"/usr/"
+	]
+	
+	let bundle = Bundle(for: cls)
+	let bundlePath = bundle.bundlePath
+	
+	guard systemPathPrefixes.contains(where: { bundlePath.hasPrefix($0) }) == false else {
+		return true
+	}
+	return false
 }
