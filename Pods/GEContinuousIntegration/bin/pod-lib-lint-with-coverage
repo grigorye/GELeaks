@@ -14,4 +14,4 @@ CLANG_COVERAGE_MAPPING = YES
 CLANG_ENABLE_CODE_COVERAGE = YES
 END
 
-env XCODE_XCCONFIG_FILE="${xcconfig:?}" PATH="${tmpbindir:?}":"$PATH" pod lib lint "$@"
+env XCODE_XCCONFIG_FILE="${xcconfig:?}" PATH="${tmpbindir:?}":"$PATH" bundle exec pod lib lint "$@"
