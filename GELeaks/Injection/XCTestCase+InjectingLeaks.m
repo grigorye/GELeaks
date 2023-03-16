@@ -5,7 +5,7 @@
 //  Created by Grigory Entin on 20/12/2018.
 //
 
-#import <GELeaks/GELeaks-Swift.h>
+#import "GELeaks-Swift.h"
 #import <JRSwizzle/JRSwizzle.h>
 #import <XCTest/XCTest.h>
 
