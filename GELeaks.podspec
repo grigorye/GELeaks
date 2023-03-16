@@ -29,6 +29,14 @@ Pod::Spec.new do |s|
   s.dependency 'JRSwizzle'
   s.framework = 'XCTest'
 
+  s.pod_target_xcconfig = {
+    'APPLICATION_EXTENSION_API_ONLY' => 'YES',
+    'DEFINES_MODULE' => 'YES',
+    'ENABLE_BITCODE' => 'NO',
+    'ENABLE_TESTING_SEARCH_PATHS' => 'YES',
+    'OTHER_LDFLAGS' => '$(inherited) -Xlinker -no_application_extension',
+  }
+  
   s.test_spec 'Tests' do |test_spec|
     test_spec.source_files = 'GELeaksTests/**/*.{swift,h,m}'
     test_spec.exclude_files = 'GELeaksTests/**/*Spec.swift'
